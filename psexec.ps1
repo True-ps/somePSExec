@@ -2,15 +2,14 @@
 #my half-assed psexec deployment attempt
 
 write-host "Please specify the starting IP address of the IP range you would like to deploy:"
-$startip = Read-Host
+$startip = $args[0]
 Write-Host "Please specify the end address of the IP range you would like to deploy:`nOptional - Leave this field empty if you want to scan & deploy only on the previous IP:"
-$endIP = Read-Host
+$endIP = $args[1]
 Write-Host "Please provide a username:`nDomain users must be added as domain\user:"
-$user = 'deploy'
+$user = $args[2]
 Write-Host "Please provide a password:"
-$password = 'Abort12'
-#set location to the psexec.exe directory
-#set-location "c:\program files (x86)\naverisk\agent\packages\snmppackage"
+$password = $args[3]
+#set location to the psexec.exe directory - in this case, I am using a secondary agent that is installed in the below path.
 $workingFolder = "C:\WinAgent\Agent\Packages\SnmpPackage"
 Set-Location $workingFolder
 
@@ -33,11 +32,11 @@ Expand-Archive $workingFolder\pstools.zip -Force
 Copy-Item .\pstools\PsExec.exe .\ -Force
 }
 
-
+#checks if a second IP was given.
 if([string]::IsNullOrEmpty($endIP) -or $endIP -notcontains "*.*")
 {
 Write-Host "Only one IP address was provided. Starting scan and deploy on $startip. Please wait..."
-Start-Process .\PsExec.exe -argumentlist \\192.168.1.38, "-accepteula -u $user -p $password -e -h -f -i -c AgentSetup.exe /overwrite /noconfirm"-NoNewWindow -Wait -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+Start-Process .\PsExec.exe -argumentlist \\$currentIP$i, "-accepteula -u $user -p $password -e -h -f -i -c AgentSetup.exe /overwrite /noconfirm"-NoNewWindow -Wait -RedirectStandardOutput out.txt -RedirectStandardError err.txt
 Get-Content out.txt
 Get-Content err.txt
 
@@ -47,7 +46,7 @@ else{
 Write-Output "The following IP range was provided: $startip -> $endIP. These TCP operations take about 30-60 seconds/IP address.`n
 For a much faster experience, please download and install Powershell Core on all your target devices, then ask your script developer to adapt this program to Powershell Core, for paralles processing."
 
-#count from 1 to 254
+#loop through the IP range.
 for ($i = $first; $i -le $last; $i++)
 { 
 #assign the current $i value as the last octet of the IP range
