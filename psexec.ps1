@@ -1,15 +1,20 @@
-﻿
+
 #my half-assed psexec deployment attempt
 
-write-host "Please specify the starting IP address of the IP range you would like to deploy:"
+
 $startip = $args[0]
-Write-Host "Please specify the end address of the IP range you would like to deploy:`nOptional - Leave this field empty if you want to scan & deploy only on the previous IP:"
 $endIP = $args[1]
-Write-Host "Please provide a username:`nDomain users must be added as domain\user:"
+if($null -eq $endIP)
+{
+Write-Output "Only one IP address provided: $startip. Scanning..."
+}
+else{
+Write-Output "Scanning range $startip -> $endIP.`nThese TCP operations can take anywhere between 10-60 seconds/IP address.`n
+Parallel processing is supported in the latest version of PowerShell Core."
+}
 $user = $args[2]
-Write-Host "Please provide a password:"
 $password = $args[3]
-#set location to the psexec.exe directory - in this case, I am using a secondary agent that is installed in the below path.
+#set location to the psexec.exe directory
 $workingFolder = "C:\WinAgent\Agent\Packages\SnmpPackage"
 Set-Location $workingFolder
 
@@ -32,21 +37,19 @@ Expand-Archive $workingFolder\pstools.zip -Force
 Copy-Item .\pstools\PsExec.exe .\ -Force
 }
 
-#checks if a second IP was given.
-if([string]::IsNullOrEmpty($endIP) -or $endIP -notcontains "*.*")
+
+if([string]::IsNullOrEmpty($endIP))
 {
-Write-Host "Only one IP address was provided. Starting scan and deploy on $startip. Please wait..."
-Start-Process .\PsExec.exe -argumentlist \\$currentIP$i, "-accepteula -u $user -p $password -e -h -f -i -c AgentSetup.exe /overwrite /noconfirm"-NoNewWindow -Wait -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+Test-NetConnection $startip -Port 445
+
+Start-Process .\PsExec.exe -argumentlist \\$startip, "-accepteula -u $user -p $password -e -h -f -i -c AgentSetup.exe /overwrite /noconfirm"-NoNewWindow -Wait -RedirectStandardOutput out.txt -RedirectStandardError err.txt
 Get-Content out.txt
 Get-Content err.txt
 
 }
 else{
 
-Write-Output "The following IP range was provided: $startip -> $endIP. These TCP operations take about 30-60 seconds/IP address.`n
-For a much faster experience, please download and install Powershell Core on all your target devices, then ask your script developer to adapt this program to Powershell Core, for paralles processing."
-
-#loop through the IP range.
+#count from 1 to 254
 for ($i = $first; $i -le $last; $i++)
 { 
 #assign the current $i value as the last octet of the IP range
