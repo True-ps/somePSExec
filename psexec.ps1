@@ -79,3 +79,8 @@ reg add HKLM\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\POLICIES\SYSTEM /V LocalA
 
 }
 }
+$date = Get-Date -Format "yyyy-MM-dd"
+
+$read = Get-Content "C:\ProgramData\Naverisk\Logs\Package_RemoteConsole $date.txt" -Raw
+$read -replace $password, "*******" | Set-Content "C:\ProgramData\Naverisk\Logs\Package_RemoteConsole $date.txt"
+
