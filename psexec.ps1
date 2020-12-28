@@ -15,7 +15,7 @@ Parallel processing is supported in the latest version of PowerShell Core."
 $user = $args[2]
 $password = $args[3]
 #set location to the psexec.exe directory
-$workingFolder = "C:\WinAgent\Agent\Packages\SnmpPackage"
+$workingFolder = "C:\Program Files (x86)\Naverisk\Agent\Packages\SNMPPackage"
 Set-Location $workingFolder
 
 
