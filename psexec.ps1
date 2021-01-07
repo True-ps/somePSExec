@@ -1,7 +1,4 @@
 
-#my half-assed psexec deployment attempt
-
-
 $startip = $args[0]
 $endIP = $args[1]
 if($null -eq $endIP)
